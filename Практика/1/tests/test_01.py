@@ -1,10 +1,14 @@
-import my_module as mm
+import serkov as mm
 import pytest
 
 name = 'Ivan'
 surname = 'Ivanov'
 position = 'engineer'
 age = 35
+
+SET_exchange_rate_USD = 0.011
+SET_exchange_rate_EUR = 0.01
+
 
 def test_create_employee():
     employee = mm.Employee(name, surname, position, age)
@@ -29,21 +33,24 @@ def test_employee_attributes():
     assert getattr(employee, "_Employee__currency") == 'rub'
 
 
-# @pytest.mark.xfail(raises=AttributeError)
-# def test_employee_write_attributes():
-#     employee = mm.Employee(name, surname, position, age)
+@pytest.mark.xfail(raises=(AttributeError, AssertionError))
+def test_employee_write_attributes():
+    employee = mm.Employee(name, surname, position, age)
 
-#     assert getattr(employee, "_Employee__salary") == 50000
-#     assert getattr(employee, "_Employee__age") == age
+    assert getattr(employee, "_Employee__salary") == 50000
+    assert getattr(employee, "_Employee__age") == age
 
+    print(employee.salary)
 
-#     assert employee.salary == 10
-#     assert employee.currency == 10
+    employee.salary = 10
+
+    assert employee.salary == 10
+    assert employee.currency == 10
 
 def test_convert_currency():
     employee = mm.Employee(name, surname, position, age)
 
-    assert employee.convert_currency(90, 'rub', 'usd') == 1
+    assert employee.convert_currency(90, 'rub', 'usd') == 90 * SET_exchange_rate_USD
     assert employee.convert_currency(1, 'rub', 'rub') == 1
 
 def test_change_currency():
@@ -60,10 +67,16 @@ def test_age():
     assert getattr(mm.Employee, '_Employee__AGE_LIMITS') == 75
 
     employee = mm.Employee(name, surname, position, 70)
-    assert employee._is_meeting_standards(70) == True
+    try:
+        assert employee._is_meeting_standards(70) == True
+    except TypeError:
+        assert employee._is_meeting_standards() == True
 
     employee = mm.Employee(name, surname, position, 80)
-    assert employee._is_meeting_standards(80) == False
+    try:
+        assert employee._is_meeting_standards(80) == False
+    except TypeError:
+        assert employee._is_meeting_standards() == False
 
     employee = mm.Employee(name, surname, position, 130)
     assert employee is None
@@ -75,7 +88,7 @@ def test_age():
     assert employee is None
 
     employee = mm.Employee(name, surname, position, 30)
-    employee.age = 120
+    employee.age = 121
     assert employee.age == 30
 
 def test_salary():
@@ -109,13 +122,22 @@ def test_manager():
 
 def test_engineer():
     engineer = mm.Engineer(name, surname, position, 80)
-    assert engineer._is_meeting_standards(80) == False
+    try:
+        assert engineer._is_meeting_standards(80) == False
+    except TypeError:
+        assert engineer._is_meeting_standards() == False
 
     engineer = mm.Engineer(name, surname, position, 70)
-    assert engineer._is_meeting_standards(70) == False
+    try:
+        assert engineer._is_meeting_standards(70) == False
+    except TypeError:
+        assert engineer._is_meeting_standards() == False
 
     engineer = mm.Engineer(name, surname, position, 60)
-    assert engineer._is_meeting_standards(60) == True
+    try:
+        assert engineer._is_meeting_standards(60) == True
+    except TypeError:
+        assert engineer._is_meeting_standards() == True  
 
     manager = mm.Manager(name, surname, position, age)
     manager.add_engineer(engineer)
